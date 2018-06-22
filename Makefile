@@ -11,11 +11,10 @@ start_kafka:
 	deploy/kafka/bin/kafka-server-start.sh deploy/kafka/config/server.properties
 
 start_consumer:
-	./deploy/kafka/bin/kafka-console-consumer.sh --zookeeper localhost:2181 --from-beginning --topic destTopic
+	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --topic dummyTopic
 
 start_producer:
-	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic srcTopic
-	# deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic dummyTopic
+	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic dummyTopic
 
 start_controller1:
 	./uReplicator-Distribution/target/uReplicator-Distribution-pkg/bin/start-controller-example1.sh
@@ -30,6 +29,7 @@ start_worker2:
 	./uReplicator-Distribution/target/uReplicator-Distribution-pkg/bin/start-worker-example2.sh
 
 
+# \Users\Nikhilesh-singh\AppData\Local\Packages\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\LocalState\rootfs\tmp
 
 describe_topic:
 	/mnt/c/Users/Nikhilesh-singh/Documents/dev/uReplicator/deploy/kafka/bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic dummyTopic

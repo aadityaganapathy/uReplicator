@@ -1,0 +1,65 @@
+2018-06-22 15:49:24,339 [myid:] - INFO  [main:QuorumPeerConfig@101] - Reading configuration from: /mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../conf/zoo.cfg
+2018-06-22 15:49:24,344 [myid:] - INFO  [main:DatadirCleanupManager@78] - autopurge.snapRetainCount set to 3
+2018-06-22 15:49:24,344 [myid:] - INFO  [main:DatadirCleanupManager@79] - autopurge.purgeInterval set to 0
+2018-06-22 15:49:24,345 [myid:] - INFO  [main:DatadirCleanupManager@101] - Purge task is not scheduled.
+2018-06-22 15:49:24,345 [myid:] - WARN  [main:QuorumPeerMain@113] - Either no config or no quorum defined in config, running  in standalone mode
+2018-06-22 15:49:24,354 [myid:] - INFO  [main:QuorumPeerConfig@101] - Reading configuration from: /mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../conf/zoo.cfg
+2018-06-22 15:49:24,355 [myid:] - INFO  [main:ZooKeeperServerMain@95] - Starting server
+2018-06-22 15:49:24,362 [myid:] - INFO  [main:Environment@98] - Server environment:zookeeper.version=3.4.3-1240972, built on 02/06/2012 10:48 GMT
+2018-06-22 15:49:24,362 [myid:] - INFO  [main:Environment@98] - Server environment:host.name=BCP5ZM2.TELETRACKING.COM
+2018-06-22 15:49:24,362 [myid:] - INFO  [main:Environment@98] - Server environment:java.version=1.8.0_171
+2018-06-22 15:49:24,362 [myid:] - INFO  [main:Environment@98] - Server environment:java.vendor=Oracle Corporation
+2018-06-22 15:49:24,363 [myid:] - INFO  [main:Environment@98] - Server environment:java.home=/usr/lib/jvm/java-8-openjdk-amd64/jre
+2018-06-22 15:49:24,363 [myid:] - INFO  [main:Environment@98] - Server environment:java.class.path=/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../build/classes:/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../build/lib/*.jar:/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../lib/slf4j-log4j12-1.6.1.jar:/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../lib/slf4j-api-1.6.1.jar:/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../lib/netty-3.2.2.Final.jar:/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../lib/log4j-1.2.15.jar:/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../lib/jline-0.9.94.jar:/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../zookeeper-3.4.3.jar:/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../src/java/lib/*.jar:/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper/bin/../conf:
+2018-06-22 15:49:24,363 [myid:] - INFO  [main:Environment@98] - Server environment:java.library.path=/usr/java/packages/lib/amd64:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib
+2018-06-22 15:49:24,363 [myid:] - INFO  [main:Environment@98] - Server environment:java.io.tmpdir=/tmp
+2018-06-22 15:49:24,363 [myid:] - INFO  [main:Environment@98] - Server environment:java.compiler=<NA>
+2018-06-22 15:49:24,363 [myid:] - INFO  [main:Environment@98] - Server environment:os.name=Linux
+2018-06-22 15:49:24,364 [myid:] - INFO  [main:Environment@98] - Server environment:os.arch=amd64
+2018-06-22 15:49:24,364 [myid:] - INFO  [main:Environment@98] - Server environment:os.version=4.4.0-43-Microsoft
+2018-06-22 15:49:24,364 [myid:] - INFO  [main:Environment@98] - Server environment:user.name=nikhilesh2
+2018-06-22 15:49:24,364 [myid:] - INFO  [main:Environment@98] - Server environment:user.home=/home/nikhilesh2
+2018-06-22 15:49:24,364 [myid:] - INFO  [main:Environment@98] - Server environment:user.dir=/mnt/c/Users/Nikhilesh-singh/Documents/uReplicator/deploy/zookeeper
+2018-06-22 15:49:24,368 [myid:] - INFO  [main:ZooKeeperServer@733] - tickTime set to 2000
+2018-06-22 15:49:24,369 [myid:] - INFO  [main:ZooKeeperServer@742] - minSessionTimeout set to -1
+2018-06-22 15:49:24,369 [myid:] - INFO  [main:ZooKeeperServer@751] - maxSessionTimeout set to -1
+2018-06-22 15:49:24,377 [myid:] - INFO  [main:NIOServerCnxnFactory@110] - binding to port 0.0.0.0/0.0.0.0:2181
+2018-06-22 15:49:24,387 [myid:] - INFO  [main:FileSnap@83] - Reading snapshot /tmp/zookeeper/version-2/snapshot.0
+2018-06-22 15:49:24,400 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 27(next log) for type -11
+2018-06-22 15:49:24,400 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 28(next log) for type -10
+2018-06-22 15:49:24,400 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 29(next log) for type 1
+2018-06-22 15:49:24,401 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 30(next log) for type 5
+2018-06-22 15:49:24,402 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 31(next log) for type -1
+2018-06-22 15:49:24,402 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 32(next log) for type -1
+2018-06-22 15:49:24,403 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 33(next log) for type -1
+2018-06-22 15:49:24,403 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 34(next log) for type 1
+2018-06-22 15:49:24,403 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 35(next log) for type -10
+2018-06-22 15:49:24,403 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 36(next log) for type -11
+2018-06-22 15:49:24,403 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 37(next log) for type -10
+2018-06-22 15:49:24,404 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 38(next log) for type -10
+2018-06-22 15:49:24,404 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 39(next log) for type -10
+2018-06-22 15:49:24,404 [myid:] - ERROR [main:FileTxnSnapLog@142] - 41(higestZxid) > 40(next log) for type 1
+2018-06-22 15:49:24,411 [myid:] - INFO  [main:FileTxnSnapLog@238] - Snapshotting: 0x8b to /tmp/zookeeper/version-2/snapshot.8b
+2018-06-22 15:49:32,000 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a0010, timeout of 6000ms exceeded
+2018-06-22 15:49:32,001 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a000f, timeout of 6000ms exceeded
+2018-06-22 15:49:32,002 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a0010
+2018-06-22 15:49:32,002 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a000f
+2018-06-22 15:49:32,002 [myid:] - INFO  [SyncThread:0:FileTxnLog@199] - Creating new log file: log.8c
+2018-06-22 15:49:56,000 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a0014, timeout of 30000ms exceeded
+2018-06-22 15:49:56,001 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a0012, timeout of 30000ms exceeded
+2018-06-22 15:49:56,001 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a000d, timeout of 30000ms exceeded
+2018-06-22 15:49:56,002 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a000c, timeout of 30000ms exceeded
+2018-06-22 15:49:56,004 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a0013, timeout of 30000ms exceeded
+2018-06-22 15:49:56,004 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a0015, timeout of 30000ms exceeded
+2018-06-22 15:49:56,005 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a0011, timeout of 30000ms exceeded
+2018-06-22 15:49:56,005 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a0016, timeout of 30000ms exceeded
+2018-06-22 15:49:56,005 [myid:] - INFO  [SessionTracker:ZooKeeperServer@334] - Expiring session 0x16427ec332a000e, timeout of 30000ms exceeded
+2018-06-22 15:49:56,006 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a0014
+2018-06-22 15:49:56,006 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a0012
+2018-06-22 15:49:56,007 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a000d
+2018-06-22 15:49:56,008 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a000c
+2018-06-22 15:49:56,008 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a0013
+2018-06-22 15:49:56,009 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a0015
+2018-06-22 15:49:56,010 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a0011
+2018-06-22 15:49:56,012 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a0016
+2018-06-22 15:49:56,012 [myid:] - INFO  [ProcessThread(sid:0 cport:-1)::PrepRequestProcessor@466] - Processed session termination for sessionid: 0x16427ec332a000e

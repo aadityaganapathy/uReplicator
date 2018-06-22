@@ -90,60 +90,111 @@ install() {
 }
 
 start_all() {
-  echo "DIR IS"
-  echo $DIR
-  $DIR/grid start zookeeper
+  # $DIR/grid start zookeeper
+  # $DIR/grid start kafka1
+  # $DIR/grid start kafka2
+  # stop_all
+  $DIR/grid start zookeeper1
+  $DIR/grid start zookeeper2
+  $DIR/grid start zookeeper3
   $DIR/grid start kafka1
   $DIR/grid start kafka2
-}
+  $DIR/grid start kafka3
 
-start_zookeeper() {
-  if [ -f $DEPLOY_ROOT_DIR/$SYSTEM/bin/zkServer.sh ]; then
-    cd $DEPLOY_ROOT_DIR/$SYSTEM
-    bin/zkServer.sh start
-    cd - > /dev/null
-  else
-    echo 'Zookeeper is not installed. Run: bin/grid install zookeeper'
-  fi
-}
-
-start_kafka() {
-  if [ -f $DEPLOY_ROOT_DIR/$SYSTEM/bin/kafka-server-start.sh ]; then
-    mkdir -p $DEPLOY_ROOT_DIR/$SYSTEM/logs
-    cd $DEPLOY_ROOT_DIR/$SYSTEM
-    nohup bin/kafka-server-start.sh config/server.properties > logs/kafka.log 2>&1 &
-    cd - > /dev/null
-  else
-    echo 'Kafka is not installed. Run: bin/grid install kafka'
-  fi
-}
-
-start_kafka1() {
-  if [ -f $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-start.sh ]; then
-    mkdir -p $DEPLOY_ROOT_DIR/kafka/logs
-    cd $DEPLOY_ROOT_DIR/kafka
-    nohup bin/kafka-server-start.sh $BASE_DIR/bin/server1.properties > logs/kafka1.log 2>&1 &
-    cd - > /dev/null
-  else
-    echo 'Kafka is not installed. Run: bin/grid install kafka'
-  fi
-}
-
-start_kafka2() {
-  if [ -f $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-start.sh ]; then
-    mkdir -p $DEPLOY_ROOT_DIR/kafka/logs
-    cd $DEPLOY_ROOT_DIR/kafka
-    nohup bin/kafka-server-start.sh $BASE_DIR/bin/server2.properties > logs/kafka2.log 2>&1 &
-    cd - > /dev/null
-  else
-    echo 'Kafka is not installed. Run: bin/grid install kafka'
-  fi
+  
 }
 
 stop_all() {
-  $DIR/grid stop kafka
-  $DIR/grid stop zookeeper
+  echo "Clearing Kafka Logs..."
+  rm -rf /tmp/kafka-logs
+  rm -rf /tmp/kafka-logs-2
+  rm -rf /tmp/kafka-logs-3
+  echo "Finished Clearing Kafka Logs!"
+  # $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-stop.sh
+  value=`jps | grep Quorum`
+  a=($(echo "$value" | tr ' ' '\n'))
+
+  re='^[0-9]+$'
+  
+  for i in "${a[@]}"; do
+    if  [[ $i =~ $re ]] ; then
+      echo "Stopping Zookeeper with PID: ${i}"
+      kill -9 $i
+    fi
+  done
+
+
+  $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-stop.sh
 }
+
+# start_zookeeper() {
+#   echo $DEPLOY_ROOT_DIR
+#   if [ -f $DEPLOY_ROOT_DIR/$SYSTEM/bin/zkServer.sh ]; then
+#     cd $DEPLOY_ROOT_DIR/$SYSTEM
+#     bin/zkServer.sh start
+#     cd - > /dev/null
+#   else
+#     echo 'Zookeeper is not installed. Run: bin/grid install zookeeper'
+#   fi
+# }
+
+start_zookeeper1() {
+    $DEPLOY_ROOT_DIR/kafka/bin/zookeeper-server-start.sh -daemon  $BASE_DIR/config/zookeeper.properties
+}
+start_zookeeper2() {
+   $DEPLOY_ROOT_DIR/kafka/bin/zookeeper-server-start.sh -daemon  $BASE_DIR/config/zookeeper-2.properties
+}
+start_zookeeper3() {
+   $DEPLOY_ROOT_DIR/kafka/bin/zookeeper-server-start.sh -daemon  $BASE_DIR/config/zookeeper-3.properties
+}
+
+start_kafka1() {
+  $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-start.sh -daemon config/server.properties
+}
+
+start_kafka2() {
+  $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-start.sh -daemon config/server-2.properties
+}
+start_kafka3() {
+  $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-start.sh -daemon config/server-3.properties
+}
+
+# deploy/kafka/bin/zookeeper-server-start.sh config/zookeeper.properties
+
+# start_kafka() {
+#   if [ -f $DEPLOY_ROOT_DIR/$SYSTEM/bin/kafka-server-start.sh ]; then
+#     mkdir -p $DEPLOY_ROOT_DIR/$SYSTEM/logs
+#     cd $DEPLOY_ROOT_DIR/$SYSTEM
+#     nohup bin/kafka-server-start.sh config/server.properties > logs/kafka.log 2>&1 &
+#     cd - > /dev/null
+#   else
+#     echo 'Kafka is not installed. Run: bin/grid install kafka'
+#   fi
+# }
+
+# start_kafka1() {
+#   if [ -f $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-start.sh ]; then
+#     mkdir -p $DEPLOY_ROOT_DIR/kafka/logs
+#     cd $DEPLOY_ROOT_DIR/kafka
+#     nohup bin/kafka-server-start.sh $BASE_DIR/bin/server1.properties > logs/kafka1.log 2>&1 &
+#     cd - > /dev/null
+#   else
+#     echo 'Kafka is not installed. Run: bin/grid install kafka'
+#   fi
+# }
+
+# start_kafka2() {
+#   if [ -f $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-start.sh ]; then
+#     mkdir -p $DEPLOY_ROOT_DIR/kafka/logs
+#     cd $DEPLOY_ROOT_DIR/kafka
+#     nohup bin/kafka-server-start.sh $BASE_DIR/bin/server2.properties > logs/kafka2.log 2>&1 &
+#     cd - > /dev/null
+#   else
+#     echo 'Kafka is not installed. Run: bin/grid install kafka'
+#   fi
+# }
+
+
 
 stop_zookeeper() {
   if [ -f $DEPLOY_ROOT_DIR/$SYSTEM/bin/zkServer.sh ]; then
