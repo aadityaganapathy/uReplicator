@@ -11,7 +11,7 @@ start_kafka:
 	deploy/kafka/bin/kafka-server-start.sh deploy/kafka/config/server.properties
 
 start_consumer:
-	./deploy/kafka/bin/kafka-console-consumer.sh --zookeeper localhost:2182 --from-beginning --topic destTopic
+	./deploy/kafka/bin/kafka-console-consumer.sh --zookeeper localhost:2181 --from-beginning --topic destTopic
 
 start_producer:
 	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic srcTopic
