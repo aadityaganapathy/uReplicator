@@ -13,6 +13,10 @@ start_kafka:
 start_consumer:
 	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --topic dummyTopic
 
+	
+start_consumer2:
+	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 --from-beginning --topic dummyTopic1
+
 start_producer:
 	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic dummyTopic
 

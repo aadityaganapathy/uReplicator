@@ -27,16 +27,23 @@ import com.uber.stream.kafka.mirrormaker.controller.validation.SourceKafkaCluste
 import com.uber.stream.kafka.mirrormaker.controller.validation.ValidationManager;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Iterator;
+import java.io.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Option;
 import org.restlet.Application;
 import org.restlet.Component;
 import org.restlet.Context;
 import org.restlet.data.Protocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 /**
  * The main entry point for everything.
@@ -244,7 +251,36 @@ public class ControllerStarter {
     return conf;
   }
 
-
+// {
+//         controller.port : 9001
+//         controller.zk.str : localhost:2182
+//         controller.helix.cluster.name : MirrorMakerSource2
+//         controller.backup.to.git : false
+//         controller.auto.rebalance.delay.in.seconds : 120
+//         controller.local.backup.file.path : /var/log/kafka-mirror-maker-controller-source2
+//         controller.enable.auto.whitelist : true
+//         controller.enable.auto.topic.expansion : true
+//         controller.srckafka.zkStr : localhost:2182
+//         controller.destkafka.zkStr : localhost:2183
+//         controller.init.wait.time.in.seconds : 10
+//         controller.refresh.time.in.seconds : 20
+// }
+  public static ControllerConf getControllerConf(JSONObject config) {
+    final ControllerConf conf = new ControllerConf();
+    conf.setControllerPort((String) config.get("controllerPort"));
+    conf.setZkStr((String) config.get("srcZKPort"));
+    conf.setHelixClusterName((String) config.get("controllerName"));
+    conf.setBackUpToGit("false");
+    conf.setAutoRebalanceDelayInSeconds("120");
+    conf.setLocalBackupFilePath("/var/log/" + (String) config.get("controllerName"));
+    conf.setEnableAutoWhitelist("true");
+    conf.setEnableAutoTopicExpansion("true");
+    conf.setSrcKafkaZkPath((String) config.get("srcZKPort"));
+    conf.setDestKafkaZkPath((String) config.get("destZKPort"));
+    conf.setInitWaitTimeInSeconds("10");
+    conf.setRefreshTimeInSeconds("20");
+    return conf;
+  }
   public static ControllerStarter init(CommandLine cmd) {
     ControllerConf conf = null;
     if (cmd.hasOption("SourceServer1")) {
@@ -263,30 +299,47 @@ public class ControllerStarter {
   }
 
   public static void main(String[] args) throws Exception {
+    Options options = new Options();
+    Option configPath = new Option("config", true, "config file path");
+    configPath.setRequired(true);
+    options.addOption(configPath);
+
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = null;
-    cmd = parser.parse(ControllerConf.constructControllerOptions(), args);
-    if (cmd.getOptions().length == 0 || cmd.hasOption("help")) {
-      HelpFormatter f = new HelpFormatter();
-      f.printHelp("OptionsTip", ControllerConf.constructControllerOptions());
-      System.exit(0);
-    }
-    final ControllerStarter controllerStarter = ControllerStarter.init(cmd);
-
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      public void run() {
-        try {
-          controllerStarter.stop();
+      try {
+          cmd = parser.parse(options, args);
         } catch (Exception e) {
-          LOGGER.error("Caught error during shutdown! ", e);
+            System.out.println(e.getMessage());
+            System.exit(1);
         }
-      }
-    });
+    String inputFilePath = cmd.getOptionValue("config");
+    System.out.println("INPUT: " + inputFilePath);
+    JSONParser jsonParser = new JSONParser();
+    Object obj =  jsonParser.parse(new FileReader(inputFilePath));
+    JSONObject jsonObject = (JSONObject) obj;
 
-    try {
-      controllerStarter.start();
-    } catch (Exception e) {
-      LOGGER.error("Cannot start Helix Mirror Maker Controller: ", e);
+    JSONArray solutions = (JSONArray) jsonObject.get("controllers");
+
+
+    Iterator iterator = solutions.iterator();
+    while (iterator.hasNext()) {
+      JSONObject controller = (JSONObject) iterator.next();
+      final ControllerStarter controllerStarter = new ControllerStarter(getControllerConf(controller));
+
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        public void run() {
+          try {
+            controllerStarter.stop();
+          } catch (Exception e) {
+            LOGGER.error("Caught error during shutdown! ", e);
+          }
+        }
+      });
+      try {
+        controllerStarter.start();
+      } catch (Exception e) {
+        LOGGER.error("Cannot start Helix Mirror Maker Controller: ", e);
+      }
     }
   }
 }

@@ -6,10 +6,12 @@ from subprocess import call
 import subprocess
 import platform
 import time
+import shutil
 
 
 OUTPUT_DIR = 'output/'
 KAFKA_LOGS = '/tmp/kafka-logs/'
+sourceClusters = []
 
 def generateConfig(config):
     with open(os.path.join(OUTPUT_DIR, config['fileName']), 'w') as config_file:
@@ -31,8 +33,9 @@ def generate_config():
     # Configurations for zookeeper/kafka servers
     serverConfig = 'config/serverConfig.json'
 
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    if os.path.exists(OUTPUT_DIR):
+        shutil.rmtree(OUTPUT_DIR)
+    os.makedirs(OUTPUT_DIR)
 
      # Generate Server configurations
     with open(serverConfig) as f:
@@ -40,6 +43,8 @@ def generate_config():
         for server in data:
             zoo_conf = server['zooConfig']
             ZOO_PATH = zoo_conf['clientPort'] + "_cluster"
+
+            # If the directory for the cluster doesn't exist, create one
             if not os.path.exists(OUTPUT_DIR + "/" + ZOO_PATH):
                 os.makedirs(OUTPUT_DIR + "/" + ZOO_PATH)
             # Generate readable zookeeper filename
@@ -63,22 +68,24 @@ def generate_config():
     # Generate Controller configurations
     with open(controllerConfig) as f:
         data = json.load(f)
-        for controller in data:
+        for controller in data['controllers']:
             controller_id = controller['workerConfig']['consumer']['zookeeper.connect'].split(':')[1]
-            ZOO_PATH = zoo_conf['clientPort'] + "_cluster"
+            srcPort = controller['srcZKPort'].split(':')[1]
+            sourceClusters.append(srcPort)
+            ZOO_PATH =  srcPort + "_cluster"
             if not os.path.exists(OUTPUT_DIR + "/" + ZOO_PATH):
                 print(OUTPUT_DIR + "/" + ZOO_PATH + "does not exist! Exiting")
                 exit(1)
 
-            if not os.path.exists(OUTPUT_DIR + ZOO_PATH + "/worker/"):
-                os.makedirs(OUTPUT_DIR + ZOO_PATH + "/worker/")
+            if not os.path.exists(OUTPUT_DIR + ZOO_PATH + "/controller/"):
+                os.makedirs(OUTPUT_DIR + ZOO_PATH + "/controller/")
 
             workerConfigs = controller['workerConfig']
            
-            workerConfigs['consumer']['fileName'] = ZOO_PATH + '/worker/consumer.properties'
-            workerConfigs['producer']['fileName'] = ZOO_PATH + '/worker/producer.properties'
-            workerConfigs['helix']['fileName'] = ZOO_PATH + "/worker/helix.properties"
-            workerConfigs['topics']['fileName'] = ZOO_PATH + "/worker/topic.mappings"
+            workerConfigs['consumer']['fileName'] = ZOO_PATH + '/controller/consumer.properties'
+            workerConfigs['producer']['fileName'] = ZOO_PATH + '/controller/producer.properties'
+            workerConfigs['helix']['fileName'] = ZOO_PATH + "/controller/helix.properties"
+            workerConfigs['topics']['fileName'] = ZOO_PATH + "/controller/topicmapping.properties"
 
             generateConfig(workerConfigs['consumer'])
             generateConfig(workerConfigs['producer'])
@@ -96,10 +103,12 @@ def terminate_clusters():
 # Go through output folder and run all clusters       
 def run_clusters():
     cluster_dirs = next(os.walk('output'))[1]
-    brokers = []
     for cluster in cluster_dirs:
+        brokers = []
         zoo_properties = ''
         sub_obj = os.listdir(OUTPUT_DIR + cluster)
+
+        # Find the zookeeper file, and put all broker files in a list for later
         for item in sub_obj:
             f_type = item.split('_')[0]
             if f_type == 'broker':
@@ -108,30 +117,60 @@ def run_clusters():
                 zoo_properties = item
         print("Running ZooKeeper On Port: " + zoo_properties.split('_')[1].split('.')[0])
         run_zoo(OUTPUT_DIR + cluster + '/' + zoo_properties)
+  
     
-    for broker in brokers:
-        print("Running Broker under ZooKeeper: " + broker.split('_')[1] + " | broker id: " + broker.split('_')[2].split('.')[0])
-        path_to_broker = OUTPUT_DIR + cluster + '/' + broker
-        if platform.system() == 'Windows':
-            bash_exe = "C:/cygwin64/bin/bash.exe" 
-            call([bash_exe, './deploy/kafka/bin/kafka-server-start.sh', '-daemon', path_to_broker])
-        else:
-            call(['./deploy/kafka/bin/kafka-server-start.sh', '-daemon', path_to_broker])
+        # Run all the brokers
+        for broker in brokers:
+            print("Running Broker under ZooKeeper: " + broker.split('_')[1] + " | broker id: " + broker.split('_')[2].split('.')[0])
+            # print(broker)
+            path_to_broker = OUTPUT_DIR + cluster + '/' + broker
+            if platform.system() == 'Windows':
+                bash_exe = "C:/cygwin64/bin/bash.exe" 
+                call([bash_exe, './deploy/kafka/bin/kafka-server-start.sh', '-daemon', path_to_broker])
+            else:
+                # print('running', path_to_broker)
+                subprocess.call('./deploy/kafka/bin/kafka-server-start.sh -daemon ' + path_to_broker, shell=True)
 
     
 
 def run_zoo(path_to_config):
-    # call(['./deploy/kafka/bin/zookeeper-server-start.sh', '-daemon', path_to_config])
     if platform.system() == 'Windows':
         bash_exe = "C:/cygwin64/bin/bash.exe" 
         call([bash_exe, './deploy/kafka/bin/zookeeper-server-start.sh', '-daemon', path_to_config])
     else:
-        call(['./deploy/kafka/bin/zookeeper-server-start.sh', '-daemon', path_to_config])
+        return_code = subprocess.call("./deploy/kafka/bin/zookeeper-server-start.sh -daemon " + path_to_config, shell=True)
+
+def run_controllers():
+    # run controller
+    print('Running Controller')
+    subprocess.call("nohup ./bin/pkg/start-controller-example1.sh config/controllerConfig.json > /dev/null 2>&1 &", shell=True)
+
+    # subprocess.call("./bin/pkg/start-worker-example1.sh 2183_cluster", shell=True)
+
+def run_workers():
+    print('Running Workers')
+    for port in sourceClusters:
+        print("PORT: " + port)
+        cmd = "nohup ./bin/pkg/start-worker-example1.sh " + port + "_cluster"
+        print(cmd)
+        subprocess.call("nohup ./bin/pkg/start-worker-example1.sh " + port + "_cluster > /dev/null 2>&1 &", shell=True)
+
+def init():
+    subprocess.call("cp bin/start-controller-example1.sh bin/pkg", shell=True)
+    subprocess.call("cp bin/start-worker-example1.sh bin/pkg", shell=True)
+
+def terminate_clusters():
+     subprocess.call("./bin/pkg/stop-all.sh", shell=True)
 
 def main():
+    init()
+    terminate_clusters()
     generate_config()
-    # terminate_clusters()
+    
     run_clusters()
+    run_controllers()
+    run_workers()
+
     
 
 main()

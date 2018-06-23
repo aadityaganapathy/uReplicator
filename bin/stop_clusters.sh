@@ -2,6 +2,8 @@
  
  echo "Clearing Kafka Logs..."
   rm -rf /tmp/kafka-logs/
+#   rm -rf /tmp/zookeeper/
+#   rm -rf /tmp/zookeeper-2/
   echo "Finished Clearing Kafka Logs!"
   # $DEPLOY_ROOT_DIR/kafka/bin/kafka-server-stop.sh
   value=`jps | grep Quorum`

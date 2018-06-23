@@ -90,10 +90,6 @@ install() {
 }
 
 start_all() {
-  # $DIR/grid start zookeeper
-  # $DIR/grid start kafka1
-  # $DIR/grid start kafka2
-  # stop_all
   $DIR/grid start zookeeper1
   $DIR/grid start zookeeper2
   $DIR/grid start zookeeper3
