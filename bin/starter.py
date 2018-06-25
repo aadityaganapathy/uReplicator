@@ -91,7 +91,6 @@ def run_clusters():
         # Run all the brokers
         for broker in brokers:
             print("Running Broker under ZooKeeper: " + broker.split('_')[1] + " | broker id: " + broker.split('_')[2].split('.')[0])
-            # print(broker)
             path_to_broker = OUTPUT_DIR + cluster + '/' + broker
             if platform.system() == 'Windows':
                 bash_exe = "C:/cygwin64/bin/bash.exe" 

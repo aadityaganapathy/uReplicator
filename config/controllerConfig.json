@@ -46,54 +46,6 @@
                 }
 
             }
-        },
-        {
-            "controllerName": "helixControllerTest2",
-            "controllerPort": "9001",
-            "srcZKPort": "localhost:2182",
-            "destZKPort": "localhost:2183",
-            "workerConfig": {
-                "consumer": {
-                    "zookeeper.connect": "localhost:2182",
-                    "zookeeper.connection.timeout.ms": "30000",
-                    "zookeeper.session.timeout.ms": "30000",
-                    "group.id": "kloak-mirrormaker-test2",
-                    "consumer.id": "kloakmms01-sjc2",
-                    "partition.assignment.strategy": "roundrobin",
-                    "socket.receive.buffer.bytes": "1048576",
-                    "fetch.message.max.bytes": "8388608",
-                    "queued.max.message.chunks": "5",
-                    "auto.offset.reset": "smallest"
-
-                },
-                "producer": {
-                    "bootstrap.servers": "localhost:9094",
-                    "client.id": "kloak-mirrormaker-test2",
-                    "producer.type": "async",
-                    "compression.codec": "none",
-                    "serializer.class": "kafka.serializer.DefaultEncoder",
-                    "key.serializer": "org.apache.kafka.common.serialization.ByteArraySerializer",
-                    "value.serializer": "org.apache.kafka.common.serialization.ByteArraySerializer"
-                },
-                "helix": {
-                    "zkServer": "localhost:2182",
-                    "instanceId": "helixControllerTest-id2",
-                    "helixClusterName": "helixControllerTest2"
-                },
-                "topics": {
-                    "mappings": [{
-                            "srcTopic": "dummyTopic",
-                            "destTopic": "dummyTopic1"
-                        },
-                        {
-                            "srcTopic": "mirrorTopic",
-                            "destTopic": "mirrorTopic1"
-                        }
-                    ]
-                }
-
-            }
-
         }
     ]
 }
