@@ -17,16 +17,12 @@ sourceClusters = []
 def generateConfig(config):
     with open(os.path.join(OUTPUT_DIR, config['fileName']), 'w') as config_file:
         for attr, val in config.items():
-            config_file.write(str(attr) + "=" + str(val) + '\n')
+            config_file.write(f"{str(attr)}={str(val)}\n")
 
 def generateTopicMappings(config):
     with open(os.path.join(OUTPUT_DIR, config['fileName']), 'w') as config_file:
         for mapping in config['mappings']:
-            config_file.write(mapping['srcTopic'] + " " + mapping['destTopic'] + '\n')
-
-# def generateServerConfigs(config):
-
-    
+            config_file.write(f"{mapping['srcTopic']} {mapping['destTopic']}\n")
 
 def generate_config():
     # Configurations for helix controllers/workers
@@ -44,23 +40,23 @@ def generate_config():
         data = json.load(f)
         for server in data:
             zoo_conf = server['zooConfig']
-            ZOO_PATH = zoo_conf['clientPort'] + "_cluster"
+            ZOO_PATH = f"{zoo_conf['clientPort']}_cluster"
             # If the directory for the cluster doesn't exist, create one
-            if not os.path.exists(OUTPUT_DIR + "/" + ZOO_PATH):
-                os.makedirs(OUTPUT_DIR + "/" + ZOO_PATH)
+            if not os.path.exists(f"{OUTPUT_DIR}{ZOO_PATH}"):
+                os.makedirs(f"{OUTPUT_DIR}{ZOO_PATH}")
             # Generate readable zookeeper filename
-            zoo_conf['fileName'] = ZOO_PATH + "/" + "zoo_" + zoo_conf['clientPort'] + ".properties"
+            zoo_conf['fileName'] = f"{ZOO_PATH}/zoo_{zoo_conf['clientPort']}.properties"
             # Generate zookeeper config
             generateConfig(zoo_conf)
 
             # Loop through each broker managed by zookeeper
             for broker in server['brokersConfig']:
                 # Generate readable kafka broker filename
-                broker['fileName'] = ZOO_PATH + "/" + str("broker_" + str(server['zooConfig']['clientPort']) + "_" + str(broker['broker.id']) + ".properties")
+                broker['fileName'] = f"{ZOO_PATH}/broker_{str(server['zooConfig']['clientPort'])}_{str(broker['broker.id'])}.properties"
                 # Add the corresponding zookeeper listener
-                broker['zookeeper.connect']= "localhost:" + zoo_conf['clientPort']
+                broker['zookeeper.connect']= f"localhost:{zoo_conf['clientPort']}"
                 # Set path for logs
-                broker['log.dirs'] = KAFKA_LOGS + ZOO_PATH + "_" + str(broker['broker.id'])
+                broker['log.dirs'] = f"{KAFKA_LOGS}{ZOO_PATH}_{str(broker['broker.id'])}"
                 # Generate broker config
                 generateConfig(broker)
 
@@ -80,7 +76,7 @@ def run_clusters():
     for cluster in cluster_dirs:
         brokers = []
         zoo_properties = ''
-        sub_obj = os.listdir(OUTPUT_DIR + cluster)
+        sub_obj = os.listdir(f"{OUTPUT_DIR}{cluster}")
 
         # Find the zookeeper file, and put all broker files in a list for later
         for item in sub_obj:
@@ -89,8 +85,8 @@ def run_clusters():
                 brokers.append(item)
             elif f_type == 'zoo':
                 zoo_properties = item
-        print("Running ZooKeeper On Port: " + zoo_properties.split('_')[1].split('.')[0])
-        run_zoo(OUTPUT_DIR + cluster + '/' + zoo_properties)
+        print(f"Running ZooKeeper On Port: {zoo_properties.split('_')[1].split('.')[0]}")
+        run_zoo(f"{OUTPUT_DIR}{cluster}/{zoo_properties}")
 
         # Run all the brokers
         for broker in brokers:
@@ -132,28 +128,31 @@ def run_controller(port):
 
                 generate_controller(controller)
 
-                subprocess.call("nohup ./bin/pkg/start-controller-example1.sh " + tempFile + " > /dev/null 2>&1 &", shell=True)
-                subprocess.call("nohup ./bin/pkg/start-worker-example1.sh " + controller['srcZKPort'].split(':')[1] + "_cluster > /dev/null 2>&1 &", shell=True)
+                subprocess.call(f"nohup ./bin/pkg/start-controller-example1.sh {tempFile} > /dev/null 2>&1 &", shell=True)
+                subprocess.call(f"nohup ./bin/pkg/start-worker-example1.sh {controller['srcZKPort'].split(':')[1]}_cluster > /dev/null 2>&1 &", shell=True)
                 exit()
     print("Could not find specified controller")
                 
 
 def generate_controller(controller):
+        controller_dir = '/controller'
         srcPort = controller['srcZKPort'].split(':')[1]
         
         ZOO_PATH =  srcPort + "_cluster"
-        if not os.path.exists(OUTPUT_DIR + "/" + ZOO_PATH):
-            os.makedirs(OUTPUT_DIR + "/" + ZOO_PATH)
+        if not os.path.exists(f"{OUTPUT_DIR}{ZOO_PATH}"):
+            os.makedirs(f"{OUTPUT_DIR}{ZOO_PATH}")
 
-        if not os.path.exists(OUTPUT_DIR + ZOO_PATH + "/controller/"):
-            os.makedirs(OUTPUT_DIR + ZOO_PATH + "/controller/")
+        path_to_controller = f"{OUTPUT_DIR}{ZOO_PATH}{controller_dir}"
+        if not os.path.exists(path_to_controller):
+            os.makedirs(path_to_controller)
 
         workerConfigs = controller['workerConfig']
+        worker_base_path = f"{ZOO_PATH}{controller_dir}"
 
-        workerConfigs['consumer']['fileName'] = ZOO_PATH + '/controller/consumer.properties'
-        workerConfigs['producer']['fileName'] = ZOO_PATH + '/controller/producer.properties'
-        workerConfigs['helix']['fileName'] = ZOO_PATH + "/controller/helix.properties"
-        workerConfigs['topics']['fileName'] = ZOO_PATH + "/controller/topicmapping.properties"
+        workerConfigs['consumer']['fileName'] = f"{worker_base_path}/consumer.properties"
+        workerConfigs['producer']['fileName'] = f"{worker_base_path}/producer.properties"
+        workerConfigs['helix']['fileName'] = f"{worker_base_path}/helix.properties"
+        workerConfigs['topics']['fileName'] = f"{worker_base_path}/topicmapping.properties"
 
         generateConfig(workerConfigs['consumer'])
         generateConfig(workerConfigs['producer'])
@@ -162,10 +161,9 @@ def generate_controller(controller):
 
 
 def run_workers():
-    print('Running Workers')
-    print(sourceClusters)
+    print(f"Running Workers {sourceClusters}")
     for port in sourceClusters:
-        subprocess.call("nohup ./bin/pkg/start-worker-example1.sh " + port + "_cluster > /dev/null 2>&1 &", shell=True)
+        subprocess.call(f"nohup ./bin/pkg/start-worker-example1.sh {port}_cluster > /dev/null 2>&1 &", shell=True)
 
 def init():
     subprocess.call("cp bin/start-controller-example1.sh bin/pkg", shell=True)
@@ -188,7 +186,5 @@ def main():
         run_controller(sys.argv[2])
     else:
         options[sys.argv[1]]()
-
-    
 
 main()
