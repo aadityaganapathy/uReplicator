@@ -7,6 +7,7 @@ import subprocess
 import platform
 import time
 import shutil
+from collections import OrderedDict
 
 
 OUTPUT_DIR = 'output/'
@@ -33,17 +34,17 @@ def generate_config():
     # Configurations for zookeeper/kafka servers
     serverConfig = 'config/serverConfig.json'
 
+    # Clear directory
     if os.path.exists(OUTPUT_DIR):
         shutil.rmtree(OUTPUT_DIR)
     os.makedirs(OUTPUT_DIR)
 
-     # Generate Server configurations
+    # Generate Server configurations
     with open(serverConfig) as f:
         data = json.load(f)
         for server in data:
             zoo_conf = server['zooConfig']
             ZOO_PATH = zoo_conf['clientPort'] + "_cluster"
-
             # If the directory for the cluster doesn't exist, create one
             if not os.path.exists(OUTPUT_DIR + "/" + ZOO_PATH):
                 os.makedirs(OUTPUT_DIR + "/" + ZOO_PATH)
@@ -56,10 +57,8 @@ def generate_config():
             for broker in server['brokersConfig']:
                 # Generate readable kafka broker filename
                 broker['fileName'] = ZOO_PATH + "/" + str("broker_" + str(server['zooConfig']['clientPort']) + "_" + str(broker['broker.id']) + ".properties")
-
                 # Add the corresponding zookeeper listener
                 broker['zookeeper.connect']= "localhost:" + zoo_conf['clientPort']
-
                 # Set path for logs
                 broker['log.dirs'] = KAFKA_LOGS + ZOO_PATH + "_" + str(broker['broker.id'])
                 # Generate broker config
@@ -69,40 +68,15 @@ def generate_config():
     with open(controllerConfig) as f:
         data = json.load(f)
         for controller in data['controllers']:
-            controller_id = controller['workerConfig']['consumer']['zookeeper.connect'].split(':')[1]
             srcPort = controller['srcZKPort'].split(':')[1]
             sourceClusters.append(srcPort)
-            ZOO_PATH =  srcPort + "_cluster"
-            if not os.path.exists(OUTPUT_DIR + "/" + ZOO_PATH):
-                print(OUTPUT_DIR + "/" + ZOO_PATH + "does not exist! Exiting")
-                exit(1)
-
-            if not os.path.exists(OUTPUT_DIR + ZOO_PATH + "/controller/"):
-                os.makedirs(OUTPUT_DIR + ZOO_PATH + "/controller/")
-
-            workerConfigs = controller['workerConfig']
-           
-            workerConfigs['consumer']['fileName'] = ZOO_PATH + '/controller/consumer.properties'
-            workerConfigs['producer']['fileName'] = ZOO_PATH + '/controller/producer.properties'
-            workerConfigs['helix']['fileName'] = ZOO_PATH + "/controller/helix.properties"
-            workerConfigs['topics']['fileName'] = ZOO_PATH + "/controller/topicmapping.properties"
-
-            generateConfig(workerConfigs['consumer'])
-            generateConfig(workerConfigs['producer'])
-            generateConfig(workerConfigs['helix'])
-            generateTopicMappings(workerConfigs['topics'])
+            generate_controller(controller)
     
-
-# TODO: GET THIS TO WORK
-def terminate_clusters():
-    call(['dos2unix', 'bin/stop_clusters.sh'])
-    p = subprocess.Popen(['sh','bin/stop_clusters.sh'])
-    time.sleep(2)
-    p.kill()
 
 # Go through output folder and run all clusters       
 def run_clusters():
     cluster_dirs = next(os.walk('output'))[1]
+    # count = 0;
     for cluster in cluster_dirs:
         brokers = []
         zoo_properties = ''
@@ -117,8 +91,7 @@ def run_clusters():
                 zoo_properties = item
         print("Running ZooKeeper On Port: " + zoo_properties.split('_')[1].split('.')[0])
         run_zoo(OUTPUT_DIR + cluster + '/' + zoo_properties)
-  
-    
+
         # Run all the brokers
         for broker in brokers:
             print("Running Broker under ZooKeeper: " + broker.split('_')[1] + " | broker id: " + broker.split('_')[2].split('.')[0])
@@ -128,31 +101,70 @@ def run_clusters():
                 bash_exe = "C:/cygwin64/bin/bash.exe" 
                 call([bash_exe, './deploy/kafka/bin/kafka-server-start.sh', '-daemon', path_to_broker])
             else:
-                # print('running', path_to_broker)
                 subprocess.call('./deploy/kafka/bin/kafka-server-start.sh -daemon ' + path_to_broker, shell=True)
-
-    
 
 def run_zoo(path_to_config):
     if platform.system() == 'Windows':
         bash_exe = "C:/cygwin64/bin/bash.exe" 
         call([bash_exe, './deploy/kafka/bin/zookeeper-server-start.sh', '-daemon', path_to_config])
     else:
-        return_code = subprocess.call("./deploy/kafka/bin/zookeeper-server-start.sh -daemon " + path_to_config, shell=True)
+        subprocess.call("./deploy/kafka/bin/zookeeper-server-start.sh -daemon " + path_to_config, shell=True)
 
 def run_controllers():
     # run controller
     print('Running Controller')
     subprocess.call("nohup ./bin/pkg/start-controller-example1.sh config/controllerConfig.json > /dev/null 2>&1 &", shell=True)
 
-    # subprocess.call("./bin/pkg/start-worker-example1.sh 2183_cluster", shell=True)
+def run_controller(port):
+    print("Finding Controller on port: " + port)
+    controllerConfig = 'config/controllerConfig.json'
+    tempFile = 'config/controller_temp.json'
+    with open(controllerConfig) as f:
+        data = json.load(f)
+        for controller in data['controllers']:
+            if controller['controllerPort'] == port:
+                print("Found controller!")
+                file = open(tempFile, 'w+')
+                data = {}
+                data['controllers'] = []
+                data['controllers'].append(controller)
+                json.dump(data, file)
+
+                generate_controller(controller)
+
+                subprocess.call("nohup ./bin/pkg/start-controller-example1.sh " + tempFile + " > /dev/null 2>&1 &", shell=True)
+                subprocess.call("nohup ./bin/pkg/start-worker-example1.sh " + controller['srcZKPort'].split(':')[1] + "_cluster > /dev/null 2>&1 &", shell=True)
+                exit()
+    print("Could not find specified controller")
+                
+
+def generate_controller(controller):
+        srcPort = controller['srcZKPort'].split(':')[1]
+        
+        ZOO_PATH =  srcPort + "_cluster"
+        if not os.path.exists(OUTPUT_DIR + "/" + ZOO_PATH):
+            os.makedirs(OUTPUT_DIR + "/" + ZOO_PATH)
+
+        if not os.path.exists(OUTPUT_DIR + ZOO_PATH + "/controller/"):
+            os.makedirs(OUTPUT_DIR + ZOO_PATH + "/controller/")
+
+        workerConfigs = controller['workerConfig']
+
+        workerConfigs['consumer']['fileName'] = ZOO_PATH + '/controller/consumer.properties'
+        workerConfigs['producer']['fileName'] = ZOO_PATH + '/controller/producer.properties'
+        workerConfigs['helix']['fileName'] = ZOO_PATH + "/controller/helix.properties"
+        workerConfigs['topics']['fileName'] = ZOO_PATH + "/controller/topicmapping.properties"
+
+        generateConfig(workerConfigs['consumer'])
+        generateConfig(workerConfigs['producer'])
+        generateConfig(workerConfigs['helix'])
+        generateTopicMappings(workerConfigs['topics'])
+
 
 def run_workers():
     print('Running Workers')
+    print(sourceClusters)
     for port in sourceClusters:
-        print("PORT: " + port)
-        cmd = "nohup ./bin/pkg/start-worker-example1.sh " + port + "_cluster"
-        print(cmd)
         subprocess.call("nohup ./bin/pkg/start-worker-example1.sh " + port + "_cluster > /dev/null 2>&1 &", shell=True)
 
 def init():
@@ -164,12 +176,18 @@ def terminate_clusters():
 
 def main():
     init()
-    terminate_clusters()
-    generate_config()
-    
-    run_clusters()
-    run_controllers()
-    run_workers()
+    options = OrderedDict()
+    options['generate_config'] = generate_config
+    options['run_clusters'] = run_clusters
+    options['run_controllers'] = run_controllers
+    options['run_workers'] = run_workers
+
+    if sys.argv[1] == "run_all":
+       [value()  for key, value in options.items()]
+    elif sys.argv[1] == "run_controller":
+        run_controller(sys.argv[2])
+    else:
+        options[sys.argv[1]]()
 
     
 
