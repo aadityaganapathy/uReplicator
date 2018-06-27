@@ -20,21 +20,11 @@ class Producer(threading.Thread):
             )
         
         counter = 1
-        partition = 0
-        with open('bin/text.txt', 'r') as f:
-            for line in f:
-                for word in line.split():
-                    print(f"PRODUCING word to partition {partition}")
-                    producer.send('testTopic2Large', bytes(f"{word} ", encoding='utf-8'), partition=partition)
-                    partition += 1
-        # while True:
-        #     counter += 1
-        #     # producer.send('testTopic2', bytes(f"{curr_time}", encoding= 'utf-8'))
-        #     producer.send('testTopic2', bytes(f"Partition zero  {counter}", encoding='utf-8'), partition=0)
-        #     producer.send('testTopic2', bytes(f"Partition one {counter}", encoding='utf-8'), partition=1)
-        #     producer.send('testTopic2', bytes(f"Partition two {counter}", encoding='utf-8'), partition=2)
-        #     # producer.send('dummyTopic', bytes(f"{curr_time}", encoding='utf-8'))
-        #     time.sleep(3)
+        while True:
+            counter += 1
+            for i in range (0,1000):
+                producer.send('testTopic', bytes(f"Partition {i} count {counter}", encoding='utf-8'), partition=i)
+            time.sleep(1)
         producer.close()
 
 class Consumer0(multiprocessing.Process):
@@ -116,14 +106,12 @@ class ConsumerSource(multiprocessing.Process):
         consumer = KafkaConsumer(bootstrap_servers='localhost:9092',
                                  auto_offset_reset='earliest',
                                  consumer_timeout_ms=1000)
-        consumer.subscribe(['testTopic2'])
+        consumer.subscribe(['testTopic'])
         print("IN CONSUMER2 All\n\n\n\n")
         # while not self.stop_event.is_set():
         while True:
             for message in consumer:
                 print(message.value)
-                # if self.stop_event.is_set():
-                #     break
         consumer.close()
 
 class ConsumerDest(multiprocessing.Process):
@@ -132,23 +120,20 @@ class ConsumerDest(multiprocessing.Process):
         self.stop_event = multiprocessing.Event()
         
     def stop(self):
-        self.stop_event.set()
+        self.stop_event.set()    
         
     def run(self):
-        print("IN CONSUMER\n\n\n\n")
+        print("IN CONSUMER2 Part 2\n\n\n\n")
         consumer = KafkaConsumer(bootstrap_servers='localhost:9094',
                                  auto_offset_reset='earliest',
                                  consumer_timeout_ms=1000)
-        consumer.subscribe(['testTopic2_1'])
-        print("IN CONSUMER2\n\n\n\n")
-        # while not self.stop_event.is_set():
         while True:
-            for message in consumer:
-                print(message.value)
-                # if self.stop_event.is_set():
-                #     break
+            for i in range (0,1000):
+                consumer.assign([TopicPartition('testTopic_dest', i)])
+                for message in consumer:
+                    print(f"This is Received from {i} {message.value}")
         consumer.close()
-       
+    
         
 def main():
     tasks = []
