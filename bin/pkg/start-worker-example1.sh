@@ -117,6 +117,20 @@ if $cygwin; then
   [ -n "$REPO" ] && REPO=`cygpath --path --windows "$REPO"`
 fi
 
+# exec "$JAVACMD" $JAVA_OPTS -Dapp_name=uReplicator-Worker \
+#   -classpath "$CLASSPATH" \
+#   -Dapp.name="start-worker-example1" \
+#   -Dapp.pid="$$" \
+#   -Dapp.repo="$REPO" \
+#   -Dapp.home="$BASEDIR" \
+#   -Dbasedir="$BASEDIR" \
+#   com.uber.stream.kafka.mirrormaker.starter.MirrorMakerStarter \
+#   startMirrorMakerWorker kafka.mirrormaker.MirrorMakerWorker \
+#                   --consumer.config output/$1/controller/consumer.properties \
+#                   --producer.config output/$1/controller/producer.properties \
+#                   --helix.config output/$1/controller/helix.properties \
+#                   --topic.mappings output/$1/controller/topicmapping.properties "$@"
+
 exec "$JAVACMD" $JAVA_OPTS -Dapp_name=uReplicator-Worker \
   -classpath "$CLASSPATH" \
   -Dapp.name="start-worker-example1" \
@@ -126,7 +140,7 @@ exec "$JAVACMD" $JAVA_OPTS -Dapp_name=uReplicator-Worker \
   -Dbasedir="$BASEDIR" \
   com.uber.stream.kafka.mirrormaker.starter.MirrorMakerStarter \
   startMirrorMakerWorker kafka.mirrormaker.MirrorMakerWorker \
-                  --consumer.config output/$1/controller/consumer.properties \
-                  --producer.config output/$1/controller/producer.properties \
-                  --helix.config output/$1/controller/helix.properties \
-                  --topic.mappings output/$1/controller/topicmapping.properties "$@"
+                  --consumer.config output/2181_cluster/controller/consumer.properties \
+                  --producer.config output/2181_cluster/controller/producer.properties \
+                  --helix.config output/2181_cluster/controller/helix.properties \
+                  --topic.mappings output/2181_cluster/controller/topicmapping.properties "$@"

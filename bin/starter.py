@@ -72,7 +72,6 @@ def generate_config():
 # Go through output folder and run all clusters       
 def run_clusters():
     cluster_dirs = next(os.walk('output'))[1]
-    # count = 0;
     for cluster in cluster_dirs:
         brokers = []
         zoo_properties = ''
@@ -128,7 +127,7 @@ def run_controller(port):
                 generate_controller(controller)
 
                 subprocess.call(f"nohup ./bin/pkg/start-controller-example1.sh {tempFile} > /dev/null 2>&1 &", shell=True)
-                subprocess.call(f"nohup ./bin/pkg/start-worker-example1.sh {controller['srcZKPort'].split(':')[1]}_cluster > /dev/null 2>&1 &", shell=True)
+                # subprocess.call(f"nohup ./bin/pkg/start-worker-example1.sh {controller['srcZKPort'].split(':')[1]}_cluster > /dev/null 2>&1 &", shell=True)
                 exit()
     print("Could not find specified controller")
                 

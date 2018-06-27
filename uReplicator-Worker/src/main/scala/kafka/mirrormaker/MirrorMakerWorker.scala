@@ -78,7 +78,7 @@ class MirrorMakerWorker extends Logging with KafkaMetricsGroup {
 
   def main(args: Array[String]) {
     info("Starting mirror maker")
-
+    print("IN MIRROR MAKER WORKER")
     val mirrorMakerWorkerConf = getMirrorMakerWorkerConf
     val parser = mirrorMakerWorkerConf.getParser
 
@@ -291,6 +291,7 @@ class MirrorMakerWorker extends Logging with KafkaMetricsGroup {
               val records = messageHandler.handle(data)
               val iterRecords = records.iterator()
               while (iterRecords.hasNext) {
+                info("Recieving from " + data.partition.toString())
                 producer.send(iterRecords.next(), data.partition, data.offset)
               }
               maybeFlushAndCommitOffsets(false)
@@ -347,11 +348,12 @@ class MirrorMakerWorker extends Logging with KafkaMetricsGroup {
     val producer = new KafkaProducer[Array[Byte], Array[Byte]](producerProps)
 
     def send(record: ProducerRecord[Array[Byte], Array[Byte]], srcPartition: Int, srcOffset: Long) {
+      println("Sending to " + srcPartition.toString())
       recordCount.getAndIncrement()
       if (sync) {
         this.producer.send(record).get()
-      } else {
-        this.producer.send(record,
+      } else {        
+        this.producer.send(new ProducerRecord[Array[Byte], Array[Byte]](record.topic(), Integer.valueOf(srcPartition), record.timestamp(), record.key(), record.value()),
           new MirrorMakerProducerCallback(record.topic(), record.key(), record.value(), srcPartition, srcOffset))
       }
     }
