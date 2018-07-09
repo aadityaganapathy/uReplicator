@@ -23,19 +23,21 @@ class UZoo():
         self.configs = configs
 
     def start_zookeeper(self):
+        """Function will use the config files and start the zookeeper instances"""
         ports = list()
-        for config in self.configs:
-            self.config_parser = ConfigParser(config)
+        for port, cluster_configs in self.configs.items():
+            for config in cluster_configs:
+                self.config_parser = ConfigParser(config)
 
-            try:
-                port = self.config_parser['clientPort']
-            except KeyError:
-                raise Exception(f"Key 'clientPort' does not exist in '{config}'")
+                try:
+                    port = self.config_parser['clientPort']
+                except KeyError:
+                    raise Exception(f"Key 'clientPort' does not exist in '{config}'")
 
-            self.__run_zoo_instance(config)
-            ports.append(f"127.0.0.1:{port}")
-        self.__run_kazoo_instances(ports)
-        self.zk.add_listener(zk_listener)
+                self.__run_zoo_instance(config)
+                ports.append(f"127.0.0.1:{port}")
+            self.__run_kazoo_instances(ports)
+            self.zk.add_listener(zk_listener)
 
     def stop_zoo(self):
         self.zk.stop()
