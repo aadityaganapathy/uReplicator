@@ -30,15 +30,10 @@ class UKafka():
         for zoo_port, cluster_configs in self.configs.items():
             self.verify_conn(zoo_port, cluster_configs)
 
-    def __poll_servers(self, q):
-        while True:
-            self.repair()
-            time.sleep(2)
-
     def spawn_process(self):
         q = mp.Queue()
         p = mp.Process(target=self.__poll_servers, args = (q,))
-        p.daemon = True
+        p.daemon = True # probably need to remove this line as it doesn't seem to do anything
         p.start()
         p.join()
 
@@ -94,6 +89,12 @@ class UKafka():
     def __run_kafka_instance(self, config):
         call(f"../deploy/kafka/bin/kafka-server-start.sh -daemon {config}", shell=True)
     
+    
+    def __poll_servers(self, q):
+        while True:
+            self.repair()
+            time.sleep(2)
+
     def __get_port(self, listener):
         try:
             port = int(listener.split(":")[-1])

@@ -5,11 +5,16 @@ from MyKafka.UZoo import UZoo
 
 
 class UConnector():
-    def __init__(self, path_to_config):
+    def __init__(self, config_json_path='', path_to_config=''):
         """Intialize UConnector.
         Args:
             path_to_config (str): Relative path to where all of the cluster configurations are located
         """
+        if len(config_json_path) == 0 and len(path_to_config) == 0:
+            print("Must pass in either JSON config file or config direcotry")
+        elif len(config_json_path) > 0:
+            self.generate_config(config_json_path, path_to_config)
+
         self.path_to_config = path_to_config
         self.config_cursor = ConfigCursor(path_to_config)
 
@@ -43,3 +48,13 @@ class UConnector():
     def stop_all(self):
         """Stop all instances of zookeeper, kafka brokers and helix controllers/workers"""
         call("./bin/stop_clusters.sh && ./bin/pkg/stop-all.sh", shell=True)
+
+    def generate_config(self, config_json_path, output_path):
+        if len(output_path) == 0:
+            print("Invalid output directory path!")
+        else:
+            config_cursor = ConfigCursor(output_path)
+            config_cursor.generate_zoo_config(config_json_path)
+            config_cursor.generate_kafka_config(config_json_path)
+
+
