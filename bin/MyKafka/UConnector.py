@@ -2,19 +2,22 @@ from subprocess import call
 from MyKafka.ConfigCursor import ConfigCursor
 from MyKafka.UKafka import UKafka
 from MyKafka.UZoo import UZoo
+from MyKafka.UController import UController
 
 
 class UConnector():
-    def __init__(self, config_json_path='', path_to_config=''):
+    def __init__(self, controller_configs='', config_json_path='', path_to_config=''):
         """Intialize UConnector.
         Args:
-            path_to_config (str): Relative path to where all of the cluster configurations are located
+            config_json_path (str): Path the where the JSON file configuration is located
+            path_to_config (str): Path to where all of the cluster configurations are located
         """
         if len(config_json_path) == 0 and len(path_to_config) == 0:
             print("Must pass in either JSON config file or config direcotry")
         elif len(config_json_path) > 0:
             self.generate_config(config_json_path, path_to_config)
 
+        self.controller_configs = controller_configs
         self.path_to_config = path_to_config
         self.config_cursor = ConfigCursor(path_to_config)
 
@@ -30,20 +33,10 @@ class UConnector():
         self.u_kafka = UKafka(configs)
         return self.u_kafka
  
-    def run_controllers(self):
+    def init_controllers(self):
         """Spawn all uReplicator helix controller instances"""
-        print("connecting controllers")
-
-    def run_worker(self):
-        """Spawn all uReplicator helix worker instances"""
-        print("connecting zoo")
-
-    def start_all(self):
-        """Start everything"""
-        self.init_zoo()
-        self.init_kafka()
-        self.run_controllers()
-        self.run_worker()
+        self.u_controller = UController(self.controller_configs, self.config_cursor)
+        return self.u_controller
 
     def stop_all(self):
         """Stop all instances of zookeeper, kafka brokers and helix controllers/workers"""

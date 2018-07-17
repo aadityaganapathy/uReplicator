@@ -24,7 +24,6 @@ class UKafka():
                 self.__run_kafka_instance(config)
             time.sleep(2)
         self.repair()
-        # self.spawn_process()
 
     def repair(self):
         for zoo_port, cluster_configs in self.configs.items():
@@ -87,7 +86,7 @@ class UKafka():
         return active_brokers
 
     def __run_kafka_instance(self, config):
-        call(f"../deploy/kafka/bin/kafka-server-start.sh -daemon {config}", shell=True)
+        call(f"./deploy/kafka/bin/kafka-server-start.sh -daemon {config}", shell=True)
     
     
     def __poll_servers(self, q):
