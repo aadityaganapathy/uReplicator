@@ -61,8 +61,8 @@ class UController():
         helix_configs = self.__get_worker_configs(controllerPort)
         output_path = self.__get_controller_path(controllerPort)
         for helix_config in helix_configs:
-            print(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config}> /dev/null 2>&1 &")
-            # call(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config}> /dev/null 2>&1 &", shell=True)
+            print(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config} > /dev/null 2>&1 &")
+            call(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config} > /dev/null 2>&1 &", shell=True)
 
     def __get_worker_configs(self, controllerPort):
         controller_path = self.__get_controller_path(controllerPort)
