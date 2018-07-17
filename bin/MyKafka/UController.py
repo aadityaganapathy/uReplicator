@@ -2,7 +2,7 @@ import json
 import requests
 import glob
 import os
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from MyKafka.ConfigCursor import ConfigCursor
 
 # TODO: Create get_worker_configs function
@@ -33,19 +33,19 @@ class UController():
                 else:
                     response[port]['failed'].append(topic)
         print(response)
-
-       
         return response
         
-    def blacklist_topics(self, topics):
+    def blacklist_topics(self, topics, controllerPorts=[]):
         """Blacklist topics from being mirrored"""
-        print("")
+        if(len(controllerPorts) == 0):
+            controllerPorts = self.__get_all_controller_ports()
+        for port in controllerPorts:
+            for topic in topics:
+                self.__blacklist_topic(topic, port)
 
     def run_workers(self, controllerPort, worker_count):
         """Run 'worker_count' number of workers"""
-
-        # kill all workers
-
+        self.remove_workers()
         self.__delete_worker_configs(controllerPort)
         self.__generate_worker_configs(controllerPort, worker_count, offset=0)
         self.__run_worker_instances(controllerPort)
@@ -54,8 +54,26 @@ class UController():
     def add_workers(self, workers_count):
         print("")
 
-    def remove_workers(self, workers_count):
-        print("")
+    def remove_workers(self, workers_count=-1):
+        """Remove specified number of workers, or all workers if workers_count is omitted"""
+        worker_pids = self.get_worker_pids()
+        if workers_count > 0:
+            worker_pids = worker_pids[:workers_count]
+
+        for pid in worker_pids:
+            print(f"kill -9 {pid}")
+            call(f"kill -9 {pid}")
+
+    def get_worker_count(self):
+        """Return the number of workers currently running"""
+        return len(self.get_worker_pids())
+
+    def get_worker_pids(self):
+        """Return the pids of all workers"""
+        proc1 = Popen("pgrep -f 'Dapp_name=uReplicator-Worker'", shell=True, stdout=PIPE)
+        out = proc1.communicate()[0]
+        out = out.decode("utf-8").split("\n")[:-2] # [:-2] because empty string and some non PID number is included in list
+        return out
 
     def __run_worker_instances(self, controllerPort):
         helix_configs = self.__get_worker_configs(controllerPort)
@@ -92,9 +110,19 @@ class UController():
 
     def __whitelist_topic(self, topic, port, partitions=8):
         topic_data = {"topicName": topic, "numPartitions": partitions}
-        print(f"CURL -d {json.dumps(topic_data)} http://localhost:{port}/topics")
+        print(f"CURL -d POST {json.dumps(topic_data)} http://localhost:{port}/topics")
         try:
             res = requests.post(f"http://localhost:{port}/topics", data=json.dumps(topic_data))
+            print(res.status_code)
+        except requests.exceptions.RequestException:
+            print(f"Could not connect to controller on port {port}")
+            res = None
+        return res
+
+    def __blacklist_topic(self, topic, port):
+        print(f"CURL -X DELETE http://localhost:{port}/topics/{topic}")
+        try:
+            res = requests.delete(f"http://localhost:{port}/topics")
             print(res.status_code)
         except requests.exceptions.RequestException:
             print(f"Could not connect to controller on port {port}")
