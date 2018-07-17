@@ -43,6 +43,7 @@ class UZoo():
         self.zk.stop()
 
     def __run_zoo_instance(self, config):
+        print(f"running {config}")
         call(f"./deploy/kafka/bin/zookeeper-server-start.sh -daemon {config}", shell=True)
 
     def __run_kazoo_instances(self, ports):

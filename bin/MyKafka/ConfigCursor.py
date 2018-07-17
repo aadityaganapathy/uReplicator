@@ -16,7 +16,6 @@ class ConfigCursor():
     
     def __generate_config(self, config):
         """Function will take in json and output a properties file"""
-        print(config['fileName'])
         with open(config['fileName'], 'w') as config_file:
             for attr, val in config.items():
                 config_file.write(f"{str(attr)}={str(val)}\n")
@@ -61,7 +60,6 @@ class ConfigCursor():
         for controller_path in controller_paths:
             with open(f"{controller_path}/controllerConfig.json") as f:
                 data = json.load(f)['controllers'][0]
-                print(data['controllerPort'])
                 workerConfigs = data['workerConfig']
                 workerConfigs['consumer']['fileName'] = f"{controller_path}/consumer.properties"
                 workerConfigs['producer']['fileName'] = f"{controller_path}/producer.properties"

@@ -59,6 +59,10 @@ class UController():
 
     def __run_worker_instances(self, controllerPort):
         helix_configs = self.__get_worker_configs(controllerPort)
+        output_path = self.__get_controller_path(controllerPort)
+        for helix_config in helix_configs:
+            print(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config}> /dev/null 2>&1 &")
+            # call(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config}> /dev/null 2>&1 &", shell=True)
 
     def __get_worker_configs(self, controllerPort):
         controller_path = self.__get_controller_path(controllerPort)
@@ -101,9 +105,8 @@ class UController():
         """Function to run all specified controllers"""
         for controller in controllers:
             src_cluster_port = controller['srcZKPort'].split(":")[-1]
-            path = f"{self.__get_controller_path(controller)}/controllerConfig.json"
+            path = f"{self.__get_controller_path(controller['controllerPort'])}/controllerConfig.json"
             call(f"nohup ./bin/pkg/start-controller-example1.sh {path} {src_cluster_port} > /dev/null 2>&1 &", shell=True)
-
 
     def __get_controller_configs(self, controllers=[], key=""):
         """Returns list of controller configs as JSON"""
@@ -114,20 +117,6 @@ class UController():
                 if len(controllers) == 0 or int(controller[key]) in controllers or str(controller[key]) in controllers:
                     controllers_json.append(controller)
         return controllers_json
-    
-    # def __place_controller_configs(self, controllers):
-    #     """Function put the controllers in their respective directories"""
-    #     for controller in controllers:
-    #         path = self.__get_controller_path(controller)
-    #         self.config_cursor.create_directory(path)
-    #         f = open(f"{path}/controllerConfig.json","w+")
-    
-    # def __place_controller_contents(self, controllers):
-    #     """Function dump the controllers content into their respective files"""
-    #     for controller in controllers:
-    #         path = f"{self.__get_controller_path(controller)}/controllerConfig.json"
-    #         file = open(path, 'w+')
-    #         self.__dump_controller_data(file, controller)
 
     def __get_controller_path(self, controllerPort):
         controller_json = self.__get_controller_configs(controllers=[controllerPort], key='controllerPort')[0]
