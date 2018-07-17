@@ -19,18 +19,17 @@ done
 echo "Using ${ZOOKEEPER} as the zookeeper. You can overwrite it with '-z yourlocation'"
 echo "Using ${KAFKA_BROKER} as the kafka broker. You can overwrite it with '-b yourlocation'"
 
-# check if the topic exists. if not, create the topic
-echo "IN HERE"
-EXIST=$($BASE_DIR/deploy/kafka/bin/kafka-topics.sh --describe --topic dummyTopic --zookeeper $ZOOKEEPER)
-if [ -z "$EXIST" ]
-  then
-    echo "$BASE_DIR/deploy/kafka/bin/kafka-topics.sh --create --zookeeper $ZOOKEEPER --topic dummyTopic --partitions 1 --replication-factor 1"
-    $BASE_DIR/deploy/kafka/bin/kafka-topics.sh --create --zookeeper $ZOOKEEPER --topic dummyTopic --partitions 1 --replication-factor 1
-fi
+# # check if the topic exists. if not, create the topic
+# EXIST=$($BASE_DIR/deploy/kafka/bin/kafka-topics.sh --describe --topic dummyTopic --zookeeper $ZOOKEEPER)
+# if [ -z "$EXIST" ]
+#   then
+#     echo "$BASE_DIR/deploy/kafka/bin/kafka-topics.sh --create --zookeeper $ZOOKEEPER --topic dummyTopic --partitions 1 --replication-factor 1"
+#     $BASE_DIR/deploy/kafka/bin/kafka-topics.sh --create --zookeeper $ZOOKEEPER --topic dummyTopic --partitions 1 --replication-factor 1
+# fi
 
 # produce raw data
 while sleep 1
 do
-  echo "$BASE_DIR/deploy/kafka/bin/kafka-console-producer.sh < $BASE_DIR/bin/dummyTopicData.log --topic dummyTopic --broker $KAFKA_BROKER"
-  $BASE_DIR/deploy/kafka/bin/kafka-console-producer.sh < $BASE_DIR/bin/dummyTopicData.log --topic dummyTopic --broker-list $KAFKA_BROKER
+  echo "$BASE_DIR/deploy/kafka/bin/kafka-console-producer.sh < $BASE_DIR/bin/dummyTopicData.log --topic testTopic1000 --broker $KAFKA_BROKER"
+  $BASE_DIR/deploy/kafka/bin/kafka-console-producer.sh < $BASE_DIR/bin/dummyTopicData.log --topic testTopic1000 --broker-list $KAFKA_BROKER
 done

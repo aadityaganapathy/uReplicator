@@ -8,6 +8,8 @@ import platform
 import time
 import shutil
 from collections import OrderedDict
+import datetime
+from kafka import BrokerConnection
 
 
 OUTPUT_DIR = 'output/'
@@ -23,6 +25,20 @@ def generateTopicMappings(config):
     with open(os.path.join(OUTPUT_DIR, config['fileName']), 'w') as config_file:
         for mapping in config['mappings']:
             config_file.write(f"{mapping['srcTopic']} {mapping['destTopic']}\n")
+
+def generate_dummy_data():
+    broker_port = sys.argv[2]
+    topic = sys.argv[3]
+    dummy_data_source = sys.argv[4]
+    print(f"dummy data source {dummy_data_source}")
+    counter = 0
+    
+    while True:
+        print(counter)
+        counter += 1
+        start = datetime.datetime.now()
+        subprocess.call(f"./deploy/kafka/bin/kafka-console-producer.sh < {dummy_data_source} --topic {topic} --broker-list localhost:{broker_port}", shell=True)
+        print(f"time taken: {datetime.datetime.now() - start}")
 
 def generate_config():
     # Configurations for helix controllers/workers
@@ -51,6 +67,8 @@ def generate_config():
 
             # Loop through each broker managed by zookeeper
             for broker in server['brokersConfig']:
+                print("broker: ")
+                print(broker)
                 # Generate readable kafka broker filename
                 broker['fileName'] = f"{ZOO_PATH}/broker_{str(server['zooConfig']['clientPort'])}_{str(broker['broker.id'])}.properties"
                 # Add the corresponding zookeeper listener
@@ -177,6 +195,7 @@ def main():
     options['run_clusters'] = run_clusters
     options['run_controllers'] = run_controllers
     options['run_workers'] = run_workers
+    # options['generate_dummy_data'] = generate_dummy_data
 
     if sys.argv[1] == "run_all":
        [value()  for key, value in options.items()]

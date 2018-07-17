@@ -117,7 +117,7 @@ if $cygwin; then
   [ -n "$REPO" ] && REPO=`cygpath --path --windows "$REPO"`
 fi
 
-exec "$JAVACMD" $JAVA_OPTS -Dapp_name=uReplicator-Controller \
+exec "$JAVACMD" $JAVA_OPTS -Dapp_name=uReplicator-Controller_$2 \
   -classpath "$CLASSPATH" \
   -Dapp.name="start-controller-example1" \
   -Dapp.pid="$$" \

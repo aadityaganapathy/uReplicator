@@ -140,7 +140,7 @@ exec "$JAVACMD" $JAVA_OPTS -Dapp_name=uReplicator-Worker \
   -Dbasedir="$BASEDIR" \
   com.uber.stream.kafka.mirrormaker.starter.MirrorMakerStarter \
   startMirrorMakerWorker kafka.mirrormaker.MirrorMakerWorker \
-                  --consumer.config output/2181_cluster/controller/consumer.properties \
-                  --producer.config output/2181_cluster/controller/producer.properties \
-                  --helix.config output/2181_cluster/controller/helix.properties \
-                  --topic.mappings output/2181_cluster/controller/topicmapping.properties "$@"
+                  --consumer.config $1/consumer.properties \
+                  --producer.config $1/producer.properties \
+                  --helix.config $2 \
+                  --topic.mappings $1/topicmapping.properties "$@"

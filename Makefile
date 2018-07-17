@@ -11,7 +11,7 @@ start_kafka:
 	deploy/kafka/bin/kafka-server-start.sh deploy/kafka/config/server.properties
 
 start_consumer:
-	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --topic dummyTopic
+	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --topic testTopic
 start_consumertest:
 	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --topic testTopic
 start_consumer2:
@@ -22,7 +22,7 @@ start_consumer3:
 	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 --from-beginning --topic dummyTopic1
 
 start_producer:
-	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic dummyTopic
+	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic testTopic
 
 
 start_producer2:
@@ -58,15 +58,21 @@ status:
 	echo dump | nc localhost 2182 | grep brokers
 	echo dump | nc localhost 2183 | grep brokers
 
+create_topics:
+	# ./deploy/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --topic testTopic10 --partitions 10 --replication-factor 3
+	# ./deploy/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --topic testTopic100 --partitions 100 --replication-factor 3
+	# ./deploy/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --topic testTopic1000 --partitions 1000 --replication-factor 3
+	./deploy/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2183 --topic testTopic1000_1 --partitions 1000 --replication-factor 1
+# ./deploy/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --topic testTopic1000 --partitions 1000 --replication-factor 3
+# ./deploy/kafka/bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic testTopic10
 
-# ./deploy/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --topic testTopic2Large --partitions 1000 --replication-factor 1
-# ./deploy/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2183 --topic testTopic2 --partitions 3 --replication-factor 1
-# ./deploy/kafka/bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic testTopic2
-
-# ./deploy/kafka/bin/kafka-topics.sh --describe --zookeeper localhost:2183 --topic testTopic2_1
+# ./deploy/kafka/bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic testTopic1000
 
 
-# deploy/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --alter --topic testTopic2 --partitions 3 
+# .deploy/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --alter --topic testTopic1000 --replication-factor 3
+# deploy/kafka/bin/kafka-topics.sh --zookeeper localhost:2183 --alter --topic testTopic2Large_1 --partitions 1000 
 # deploy/kafka/bin/kafka-topics.sh --delete --zookeeper localhost:2181 --topic testTopic
 #./bin/stop_clusters.sh && ./bin/pkg/stop-all.sh
-# curl -X POST -d '{"topic":"testTopic2Large", "numPartitions":"1"}' http://localhost:9000/topics
+# curl -X POST -d '{"topic":"testTopic2Large", "numPartitions":"1000"}' http://localhost:9000/topics
+
+#curl -X POST -d '{"topic":"testTopic1000", "numPartitions":"1000"}' http://localhost:9000/topics

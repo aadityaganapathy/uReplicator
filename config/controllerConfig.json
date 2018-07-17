@@ -28,11 +28,6 @@
                     "key.serializer": "org.apache.kafka.common.serialization.ByteArraySerializer",
                     "value.serializer": "org.apache.kafka.common.serialization.ByteArraySerializer"
                 },
-                "helix": {
-                    "zkServer": "localhost:2181",
-                    "instanceId": "helixControllerTest-id",
-                    "helixClusterName": "helixControllerTest"
-                },
                 "topics": {
                     "mappings": [{
                             "srcTopic": "dummyTopic",
@@ -45,6 +40,10 @@
                         {
                             "srcTopic": "testTopic2",
                             "destTopic": "testTopic2_1"
+                        },
+                        {
+                            "srcTopic": "testTopic1000",
+                            "destTopic": "testTopic1000_1"
                         }
                     ]
                 }

@@ -3,7 +3,8 @@
         "zooConfig": {
             "dataDir": "/tmp/zookeeper",
             "clientPort": "2181",
-            "maxClientCnxns": "0"
+            "maxClientCnxns": "0",
+            "tickTime": "2000"
         },
         "brokersConfig": [
             {
@@ -20,7 +21,42 @@
                 "log.segment.bytes":1073741824,
                 "log.retention.check.interval.ms":300000,
                 "zookeeper.connection.timeout.ms":6000,
-                "delete.topic.enable": true
+                "delete.topic.enable": true,
+                "leader.imbalance.check.interval.seconds": 5
+            },
+            {
+                "broker.id": 10,
+                "listeners": "PLAINTEXT://:9095",
+                "num.network.threads":3,
+                "num.io.threads":8,
+                "socket.send.buffer.bytes":102400,
+                "socket.receive.buffer.bytes":102400,
+                "socket.request.max.bytes":104857600,
+                "num.partitions":1,
+                "num.recovery.threads.per.data.dir":1,
+                "log.retention.hours":168,
+                "log.segment.bytes":1073741824,
+                "log.retention.check.interval.ms":300000,
+                "zookeeper.connection.timeout.ms":6000,
+                "delete.topic.enable": true,
+                "leader.imbalance.check.interval.seconds": 5
+            },
+            {
+                "broker.id": 11,
+                "listeners": "PLAINTEXT://:9096",
+                "num.network.threads":3,
+                "num.io.threads":8,
+                "socket.send.buffer.bytes":102400,
+                "socket.receive.buffer.bytes":102400,
+                "socket.request.max.bytes":104857600,
+                "num.partitions":1,
+                "num.recovery.threads.per.data.dir":1,
+                "log.retention.hours":168,
+                "log.segment.bytes":1073741824,
+                "log.retention.check.interval.ms":300000,
+                "zookeeper.connection.timeout.ms":6000,
+                "delete.topic.enable": true,
+                "leader.imbalance.check.interval.seconds": 5
             }
         ]
          

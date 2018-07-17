@@ -12,16 +12,16 @@ if [ -n "$PID2" ]; then
   kill -9 ${PID2}
 fi
 
-# echo "EXECUTING: stop producing"
-# PID3=`pgrep -f "./bin/produce-data-to-kafka-topic-dummyTopic.sh"` || true
-# if [ -n "$PID3" ]; then
-#   kill -9 ${PID3}
-# fi
+echo "EXECUTING: stop producing"
+PID3=`pgrep -f "./bin/produce-data-to-kafka-topic-dummyTopic.sh"` || true
+if [ -n "$PID3" ]; then
+  kill -9 ${PID3}
+fi
 
-# echo "EXECUTING: stop consuming"
-# PID4=$(ps ax | grep -i 'kafka.tools.ConsoleConsumer' | grep java | grep -v grep | awk '{print $1}')
-# if [ -n "$PID4" ]; then
-#   kill -9 ${PID4}
-# fi
+echo "EXECUTING: stop consuming"
+PID4=$(ps ax | grep -i 'kafka.tools.ConsoleConsumer' | grep java | grep -v grep | awk '{print $1}')
+if [ -n "$PID4" ]; then
+  kill -9 ${PID4}
+fi
 
 # bin/grid stop all
