@@ -5,7 +5,7 @@ from MyKafka.UZoo import UZoo
 from MyKafka.UController import UController
 
 
-class UConnector():
+class UReplicator():
     def __init__(self, controller_configs='', config_json_path='', path_to_config=''):
         """Intialize UConnector.
         Args:

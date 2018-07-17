@@ -1,7 +1,7 @@
-from MyKafka.UConnector import UConnector
+from MyKafka.UReplicator import UReplicator
 import time
 
-connector = UConnector(
+connector = UReplicator(
     controller_configs='config/controllerConfig.json', 
     config_json_path='config/serverConfig.json', 
     path_to_config='output'
