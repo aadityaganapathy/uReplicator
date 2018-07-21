@@ -19,7 +19,7 @@ class ULogger():
         self.action(f"ERROR: Cannot remove {requested_count} workers => only {actual_count} available")
 
     def log_whitelist_topic(self, topic):
-        self.action(f"SUCESS: Whitelisted {topic}")
+        self.action(f"SUCCESS: Whitelisted {topic}")
     
     def log_repeat_whitelist_topic(self, topic):
         self.action(f"INFO: {topic} is already whitelisted")
