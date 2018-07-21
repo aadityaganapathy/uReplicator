@@ -131,7 +131,7 @@ fi
 #                   --helix.config output/$1/controller/helix.properties \
 #                   --topic.mappings output/$1/controller/topicmapping.properties "$@"
 
-exec "$JAVACMD" $JAVA_OPTS -Dapp_name=uReplicator-Worker \
+exec "$JAVACMD" $JAVA_OPTS -Dapp_name=$3 \
   -classpath "$CLASSPATH" \
   -Dapp.name="start-worker-example1" \
   -Dapp.pid="$$" \

@@ -1,12 +1,14 @@
 import json, requests, glob, os
 from subprocess import call, Popen, PIPE
 from MyKafka.ConfigCursor import ConfigCursor
+from MyKafka.ULogger import ULogger
 
 class UController():
     def __init__(self, controller_configs, config_cursor):
         self.controller_configs = controller_configs
         self.config_cursor = config_cursor
         self.config_cursor.generate_controller_config(controller_configs)
+        self.logger = ULogger()
     
     def connect_controllers(self, controllerPorts=None):
         """Establish connection to all Helix controllers"""
@@ -25,7 +27,7 @@ class UController():
             topics = requests.get(f"http://localhost:{port}/topics")
             return topics
         else:
-            self.__log_inactive_controller(controllerPort)
+            self.logger.log_inactive_controller(controllerPort)
 
     def whitelist_topics(self, topics, controllerPort):
         """Whitelist topics to be mirrored"""
@@ -34,10 +36,9 @@ class UController():
             for topic in topics:
                 res = self.__whitelist_topic(topic, controllerPort, partitions=8)
                 response[res].append(topic)
-            print(response)
             return response
         else:
-            self.__log_inactive_controller(controllerPort)
+            self.logger.log_inactive_controller(controllerPort)
 
     def blacklist_topics(self, topics, controllerPort):
         """Blacklist topics from being mirrored"""
@@ -45,11 +46,11 @@ class UController():
             for topic in topics:
                 self.__blacklist_topic(topic, controllerPort)
         else:
-            self.__log_inactive_controller(controllerPort)
+            self.logger.log_inactive_controller(controllerPort)
 
     def run_workers(self, controllerPort, worker_count):
         """Run worker_count number of workers"""
-        self.remove_workers()
+        self.remove_workers(controllerPort)
         self.__delete_worker_configs(controllerPort)
         self.__generate_worker_configs(controllerPort, worker_count, offset=0)
         self.__run_worker_instances(controllerPort)
@@ -57,19 +58,22 @@ class UController():
     def add_workers(self, workers_count):
         print("")
 
-    def remove_workers(self, workers_count=-1):
+    def remove_workers(self, controllerPort, workers_count=-1):
         """Removes specified number of workers, or all workers if workers_count is omitted"""
-        worker_pids = self.__get_worker_pids()
+        worker_pids = self.__get_worker_pids(controllerPort)
         if workers_count > 0:
             worker_pids = worker_pids[:workers_count]
+        elif workers_count > len(worker_pids):
+            self.logger.log_invalid_worker_input_count(len(worker_pids), workers_count)
+            return
 
         for pid in worker_pids:
             print(f"kill -9 {pid}")
-            call(f"kill -9 {pid}")
+            call(f"kill -9 {pid}", shell=True)
 
-    def get_worker_count(self):
+    def get_worker_count(self, controllerPort):
         """Returns the number of workers currently running"""
-        return len(self.__get_worker_pids())
+        return len(self.__get_worker_pids(controllerPort))
 
     def controller_running(self, port):
         """Returns true if the specified controller is running, false otherwise"""
@@ -85,13 +89,13 @@ class UController():
             controllerPorts == self.__get_all_controller_ports()
         for port in controllerPorts:
             if self.controller_running(port):
-                self.__log_active_controller(port)
+                self.logger.log_active_controller(port)
                 controllerPorts.remove(port)
         return controllerPorts
 
-    def __get_worker_pids(self):
+    def __get_worker_pids(self, controllerPort):
         """Returns the pids of all workers"""
-        proc1 = Popen("pgrep -f 'Dapp_name=uReplicator-Worker'", shell=True, stdout=PIPE)
+        proc1 = Popen(f"pgrep -f 'Dapp_name=uReplicator-Worker_{controllerPort}'", shell=True, stdout=PIPE)
         out = proc1.communicate()[0]
         out = out.decode("utf-8").split("\n")[:-2] # [:-2] because empty string and some non PID number is included in list
         return out
@@ -101,8 +105,8 @@ class UController():
         helix_configs = self.__get_worker_configs(controllerPort)
         output_path = self.__get_controller_path(controllerPort)
         for helix_config in helix_configs:
-            print(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config} > /dev/null 2>&1 &")
-            call(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config} > /dev/null 2>&1 &", shell=True)
+            print(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config} uReplicator-Worker_{controllerPort} > /dev/null 2>&1 &")
+            call(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config} uReplicator-Worker_{controllerPort} > /dev/null 2>&1 &", shell=True)
 
     def __get_worker_configs(self, controllerPort):
         """Returns all helix_*.properties paths for a specified controller """
@@ -134,26 +138,36 @@ class UController():
         return ports
 
     def __whitelist_topic(self, topic, port, partitions=8):
-        topic_data = {"topicName": topic, "numPartitions": partitions}
-        print(f"POST {json.dumps(topic_data)} http://localhost:{port}/topics")
+        topic_data = {"topic": topic, "numPartitions": partitions}
+        print(f"EXECUTING: curl -X POST -d '{json.dumps(topic_data)}' http://localhost:{port}/topics")
         try:
             response = requests.post(f"http://localhost:{port}/topics", data=json.dumps(topic_data))
-            print(response.status_code)
         except requests.exceptions.RequestException:
-            self.__log_failed_controller_connection(port)
+            self.logger.log_failed_controller_connection(port)
             res = "failed"
         if response.status_code < 300:
-            self.__log_successful_controller_connection(port)
+            self.logger.log_successful_controller_connection(port)
             res = "success"
+        else:
+            if self.__topic_whitelisted:
+                self.logger.log_repeat_whitelist_topic(topic)
+            else:
+                self.logger.log_failed_whitelist_topic(topic)
+            res = "failed"
         return res
+
+    def __topic_whitelisted(self, topic, port):
+        topics = self.get_topics(port)
+        if topic in topics:
+            return True
+        return False
 
     def __blacklist_topic(self, topic, port):
         print(f"DELETE http://localhost:{port}/topics/{topic}")
         try:
             res = requests.delete(f"http://localhost:{port}/topics")
-            print(res.status_code)
         except requests.exceptions.RequestException:
-            self.__log_failed_controller_connection(port)
+            self.logger.log_failed_controller_connection(port)
             res = None
         return res
 
@@ -179,19 +193,6 @@ class UController():
         src_cluster_port = controller_json['srcZKPort'].split(":")[-1]
         path = f"{self.config_cursor.get_output_config_path(src_cluster_port)}/controller"
         return path
-        
-    def __log_inactive_controller(self, controllerPort):
-        print(f"ERROR: Controller on port {controllerPort} is inactive")
-
-    def __log_active_controller(self, controllerPort):
-        print(f"INFO: Controller on port {controllerPort} is already running")
-
-    def __log_failed_controller_connection(self, controllerPort):
-        print(f"ERROR: Failed to connect to controller on port {controllerPort}")
-
-    def __log_successful_controller_connection(self, controllerPort):
-        print(f"SUCCESS: Cconnected to controller on port {controllerPort}")
-
 
 
 
