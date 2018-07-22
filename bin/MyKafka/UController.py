@@ -1,6 +1,5 @@
 import json, requests, glob, os
-import numpy as np
-import ast
+import time
 from subprocess import call, Popen, PIPE
 from MyKafka.ConfigCursor import ConfigCursor
 from MyKafka.ULogger import ULogger
@@ -24,6 +23,7 @@ class UController():
         if len(controllerPorts) > 0:
             controller_configs = self.__get_controller_configs(controllerPorts=controllerPorts)
             self.__run_controllers(controller_configs)
+            self.__poll_controllers(controllerPorts)
     
     def get_controllers(self):
         controllers = []
@@ -57,11 +57,8 @@ class UController():
     def whitelist_topics(self, topics, controllerPort):
         """Whitelist topics to be mirrored"""
         if self.controller_running(controllerPort):
-            response = {'success': [], 'failed': []}
             for topic in topics:
-                res = self.__whitelist_topic(topic, controllerPort, partitions=8)
-                response[res].append(topic)
-            return response
+                self.__whitelist_topic(topic, controllerPort, partitions=8)
         else:
             self.logger.log_inactive_controller(controllerPort)
 
@@ -90,6 +87,8 @@ class UController():
             call(f"kill -9 {controller_pid}", shell=True)
             print(f"INFO: Killed controller on port {controllerPort}")
             self.remove_workers(controllerPort)
+        else:
+            self.logger.log_inactive_controller(controllerPort, status="INFO")
 
     def remove_workers(self, controllerPort, workers_count=-1):
         """Removes specified number of workers, or all workers if workers_count is omitted"""
@@ -233,6 +232,14 @@ class UController():
         src_cluster_port = controller_json['srcZKPort'].split(":")[-1]
         path = f"{self.config_cursor.get_output_config_path(src_cluster_port)}/controller"
         return path
+
+    def __poll_controllers(self, controllerPorts):
+        retries = 3
+        for controllerPort in controllerPorts:
+            while self.controller_running(controllerPort) == False and retries >= 0:
+                retries -= 1
+                time.sleep(0.5)
+
 
 
 

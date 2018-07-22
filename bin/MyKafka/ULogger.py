@@ -3,8 +3,8 @@ class ULogger():
         actions = {True: self.__log, False: self.__nothing}
         self.action = actions[logging_on]
 
-    def log_inactive_controller(self, controllerPort):
-        self.action(f"ERROR: Controller on port {controllerPort} is inactive")
+    def log_inactive_controller(self, controllerPort, status="ERROR"):
+        self.action(f"{status}: Controller on port {controllerPort} is inactive")
 
     def log_active_controller(self, controllerPort):
         self.action(f"INFO: Controller on port {controllerPort} is already running")
