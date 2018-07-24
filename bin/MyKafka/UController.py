@@ -25,10 +25,12 @@ class UController():
             self.__run_controllers(controller_configs)
             self.__poll_controllers(controllerPorts)
     
-    def get_controllers(self):
+    def get_controllers(self, controllerPorts=[]):
         controllers = []
-        ports = self.__get_all_controller_ports()
-        for port in ports:
+        if len(controllerPorts) == 0: 
+            controllerPorts = self.__get_all_controller_ports()
+
+        for port in controllerPorts:
             controller = {}
             controller_json = self.__get_controller_configs(controllerPorts=[port])[0]
             controller['srcZKPort'] = controller_json['srcZKPort']
@@ -44,13 +46,9 @@ class UController():
     def get_topics(self, controllerPort):
         """Returns all whitelisted topics"""
         if self.controller_running(controllerPort):
-            topics = requests.get(f"http://localhost:{controllerPort}/topics")
-            # a little tricky since uReplicator returns a sentence (e.g 'currently serving topics [topic1, topic2]')
-            # so do some manipulation to extract the list
-            content = topics.content.decode("utf-8")
-            list_string_form = content[content.index('['):content.index(']')+1]
-            csv = list_string_form.strip('[]')
-            return csv.split(',')
+            response = requests.get(f"http://localhost:{controllerPort}/topics")
+            # uReplicator get topics response is not straightforward, so parse it
+            return self.__parse_get_topics_response(response)
         else:
             self.logger.log_inactive_controller(controllerPort)
 
@@ -78,14 +76,15 @@ class UController():
         self.__run_worker_instances(controllerPort)
 
     def add_workers(self, workers_count):
+        """Add additional workers"""
         print("")
 
-    def remove_controller(self, controllerPort):
+    def shutdown_controller(self, controllerPort):
         """Shuts down the specified controller"""
         if self.controller_running(controllerPort):
             controller_pid = self.__get_controller_pid(controllerPort)
             call(f"kill -9 {controller_pid}", shell=True)
-            print(f"INFO: Killed controller on port {controllerPort}")
+            print(f"[INFO]: Killed controller on port {controllerPort}")
             self.remove_workers(controllerPort)
         else:
             self.logger.log_inactive_controller(controllerPort, status="INFO")
@@ -101,7 +100,7 @@ class UController():
 
         for pid in worker_pids:
             call(f"kill -9 {pid}", shell=True)
-        print(f"INFO: Killed {len(worker_pids)} workers from controller on port {controllerPort}")
+        print(f"[INFO]: Killed {len(worker_pids)} workers from controller on port {controllerPort}")
 
     def get_worker_count(self, controllerPort):
         """Returns the number of workers currently running"""
@@ -125,6 +124,17 @@ class UController():
                 controllerPorts.remove(port)
         return controllerPorts
 
+    def __parse_get_topics_response(self, response):
+        """Parse response for get topics REST call"""
+        # Example response: "currently serving topics [topic1, topic2, ...]" -> so do some manipulation to extract the list
+        content = response.content.decode("utf-8")
+        try:
+            list_string_form = content[content.index('['):content.index(']')+1]
+            csv = list_string_form.strip('[]')
+            # stripping '[]' from [topic1, topic2, ...] will lead to whitespaces in topics e.g (['topic1',' topic2', ' topic3' ) -> so remove whitespaces
+            return [topic.strip(' ') for topic in csv.split(',')]
+        except ValueError:
+            return list()
     
     def __get_worker_pids(self, controllerPort):
         """Returns the pids of all workers"""
@@ -145,7 +155,7 @@ class UController():
         helix_configs = self.__get_worker_configs(controllerPort)
         output_path = self.__get_controller_path(controllerPort)
         for helix_config in helix_configs:
-            print(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config} uReplicator-Worker_{controllerPort} > /dev/null 2>&1 &")
+            print(f"[EXECUTING]: nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config} uReplicator-Worker_{controllerPort} > /dev/null 2>&1 &")
             call(f"nohup ./bin/pkg/start-worker-example1.sh {output_path} {helix_config} uReplicator-Worker_{controllerPort} > /dev/null 2>&1 &", shell=True)
 
     def __get_worker_configs(self, controllerPort):
@@ -157,7 +167,7 @@ class UController():
         """Generates the helix_*.properties files"""
         controller_json = self.__get_controller_configs(controllerPorts=[controllerPort])[0]
         output_path = self.__get_controller_path(controllerPort)
-        for count in range(offset, worker_count + offset):
+        for count in range(offset, int(worker_count) + offset):
             with open(os.path.join(output_path, f"helix_{count}.properties"), 'w') as config_file:
                 config_file.write(f"zkServer={controller_json['srcZKPort']}\n")
                 config_file.write(f"instanceId=helixWorker_{count}\n")
@@ -189,8 +199,10 @@ class UController():
             self.logger.log_whitelist_topic(topic)
             res = "success"
         else:
+            # topic is already whitelisted
             if self.__topic_whitelisted:
                 self.logger.log_repeat_whitelist_topic(topic)
+            # something else went wrong
             else:
                 self.logger.log_failed_whitelist_topic(topic)
             res = "failed"

@@ -15,21 +15,21 @@ start_consumer:
 start_consumertest:
 	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --topic testTopic
 start_consumer2:
-	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9093 --from-beginning --topic dummyTopic
+	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9093 --from-beginning --topic testTopic
 
 	
 start_consumer3:
-	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 --from-beginning --topic dummyTopic1
+	./deploy/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9094 --from-beginning --topic testTopic
 
 start_producer:
 	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic testTopic
 
 
 start_producer2:
-	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9093 --topic dummyTopic
+	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9093 --topic testTopic
 
 start_producer3:
-	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9094 --topic dummyTopic1
+	deploy/kafka/bin/kafka-console-producer.sh --broker-list localhost:9094 --topic testTopic
 
 start_controller1:
 	./uReplicator-Distribution/target/uReplicator-Distribution-pkg/bin/start-controller-example1.sh
