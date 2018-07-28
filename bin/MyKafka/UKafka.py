@@ -36,6 +36,7 @@ class UKafka():
         p.start()
         p.join()
 
+    # TODO: FIX retry_connections
     def verify_conn(self, zoo_port, cluster_configs):
         """Function to ensure all brokers have run successfully (and retry connection for failure)
         Args:
@@ -43,17 +44,17 @@ class UKafka():
             cluster_configs (list of str): The list of kafka broker configuration file paths
         """
         active_brokers = self.__poll_kafka_connections(zoo_port, len(cluster_configs), retries=3)
-        self.retry_connections(cluster_configs, active_brokers)
+        # self.retry_connections(cluster_configs, active_brokers)
 
-    def retry_connections(self, cluster_configs, active_brokers):
-        """Function will attempt to reconnect any inactive brokers"""
-        if len(active_brokers) == len(cluster_configs):
-            return
-        for config in cluster_configs:
-            config_parser = ConfigParser(config)
-            if str(config_parser['broker.id']) not in active_brokers:
-                self.delete_logs(config_parser['log.dirs'])
-                self.__run_kafka_instance(config)
+    # def retry_connections(self, cluster_configs, active_brokers):
+    #     """Function will attempt to reconnect any inactive brokers"""
+    #     if len(active_brokers) == len(cluster_configs):
+    #         return
+    #     for config in cluster_configs:
+    #         config_parser = ConfigParser(config)
+    #         if str(config_parser['broker.id']) not in active_brokers:
+    #             self.delete_logs(config_parser['log.dirs'])
+    #             self.__run_kafka_instance(config)
         
     def delete_logs(self, log_path):
         """Remove the logs at the given path"""
