@@ -29,12 +29,6 @@ class UZoo():
         for port, cluster_configs in self.configs.items():
             for config in cluster_configs:
                 self.config_parser = ConfigParser(config)
-
-                # try:
-                #     # port = self.config_parser['clientPort']
-                # except KeyError:
-                #     raise Exception(f"Key 'clientPort' does not exist in '{config}'")
-
                 self.__run_zoo_instance(config)
                 ports.append(f"127.0.0.1:{port}")
             self.__run_kazoo_instances(ports)
