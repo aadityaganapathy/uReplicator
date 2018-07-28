@@ -32,18 +32,6 @@
                     "mappings": [{
                             "srcTopic": "dummyTopic",
                             "destTopic": "dummyTopic1"
-                        },
-                        {
-                            "srcTopic": "mirrorTopic",
-                            "destTopic": "mirrorTopic1"
-                        },
-                        {
-                            "srcTopic": "testTopic2",
-                            "destTopic": "testTopic2_1"
-                        },
-                        {
-                            "srcTopic": "testTopic1000",
-                            "destTopic": "testTopic1000_1"
                         }
                     ]
                 }

@@ -1,7 +1,7 @@
 import socket
 import time
 from subprocess import call, Popen, PIPE
-from configobj import ConfigObj as ConfigParser
+from .ConfigCursor import ConfigCursor as ConfigParser
 from kafka import KafkaClient, BrokerConnection
 import multiprocessing as mp
 import threading

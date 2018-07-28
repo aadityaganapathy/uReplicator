@@ -1,6 +1,7 @@
 from kazoo.client import KazooClient, KazooState
 from subprocess import call
-from configobj import ConfigObj as ConfigParser
+from .ConfigCursor import ConfigCursor as ConfigParser
+# from MyKafka.ConfigCursor import ConfigCursor as ConfigParser
 
 def zk_listener(state):
     if state == KazooState.LOST:
@@ -29,10 +30,10 @@ class UZoo():
             for config in cluster_configs:
                 self.config_parser = ConfigParser(config)
 
-                try:
-                    port = self.config_parser['clientPort']
-                except KeyError:
-                    raise Exception(f"Key 'clientPort' does not exist in '{config}'")
+                # try:
+                #     # port = self.config_parser['clientPort']
+                # except KeyError:
+                #     raise Exception(f"Key 'clientPort' does not exist in '{config}'")
 
                 self.__run_zoo_instance(config)
                 ports.append(f"127.0.0.1:{port}")
