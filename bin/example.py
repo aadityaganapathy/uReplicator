@@ -1,3 +1,4 @@
+"""This is an example script that uses our uReplicator module"""
 import pprint
 import sys
 from MyKafka.UReplicator import UReplicator
